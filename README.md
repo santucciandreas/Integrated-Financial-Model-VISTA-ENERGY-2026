@@ -5,8 +5,8 @@
 
 📥 [Download the model](Vista_Energy_Financial_Model_v1.xlsx) · 🔗 [Open the dashboard](#)
 
-## Potential
- 
+## Potential 
+
 Vista grew from 24.5 thousand barrels of oil equivalent per day in 2018 to 135.4 in the fourth quarter
 of 2025. The model projects that trajectory to 2030 and asks three questions: can it continue, does it 
 pay for itself, and what is it worth.
