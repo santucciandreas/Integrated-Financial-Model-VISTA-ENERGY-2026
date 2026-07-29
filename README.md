@@ -1,4 +1,4 @@
-## Dashboard
+## Dashboard 
 
 <!-- Replace with your screenshot: save it as docs/dashboard.png -->
 ![Vista Energy dashboard](docs/dashboard.png)
