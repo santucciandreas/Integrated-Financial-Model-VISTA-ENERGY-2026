@@ -1,0 +1,120 @@
+<!doctype html>
+<!--
+  index.html — GitHub Pages entry point
+  =====================================
+  GitHub Pages only serves static files, so there is no Python process to run
+  `streamlit run app.py`. This page uses **stlite**, which is Streamlit compiled
+  to WebAssembly: Python runs inside the visitor's browser via Pyodide, with no
+  server at all.
+
+  Nothing in app.py or src/ is duplicated here — the files are fetched from the
+  repository at the paths below and written into stlite's virtual filesystem, so
+  the same source powers both the local Streamlit app and this page.
+
+  Publish with: Settings -> Pages -> Source: "Deploy from a branch" -> main / (root)
+
+  Trade-off to be aware of: the first visit downloads the Python runtime
+  (roughly 50-80 MB, cached afterwards), so expect 30-60 seconds before the
+  dashboard appears. Every later visit is fast.
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Vista Energy (VIST) — Equity Story Dashboard</title>
+    <meta
+      name="description"
+      content="Interactive DCF and comparables valuation dashboard for Vista Energy, the largest independent shale oil producer in Vaca Muerta."
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@stlite/browser@1.8.1/build/stlite.css"
+    />
+    <style>
+      html, body { margin: 0; padding: 0; height: 100%;
+                   background: linear-gradient(135deg,#150B26 0%,#1E1038 55%,#24124A 100%); }
+
+      /* Shown until stlite takes over the #root element. */
+      #boot {
+        position: fixed; inset: 0; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 1rem; text-align: center;
+        font-family: 'Space Grotesk', 'Segoe UI', sans-serif; color: #F3EEFA;
+        background: transparent; z-index: 10; padding: 2rem;
+      }
+      #boot h1 { font-size: 1.4rem; font-weight: 700; margin: 0; }
+      #boot p { font-family: 'Inter', 'Segoe UI', sans-serif; color: #9D8FB8;
+                font-size: .95rem; max-width: 46ch; margin: 0; line-height: 1.55; }
+      .spinner {
+        width: 34px; height: 34px; border: 3px solid #35204F;
+        border-top-color: #A96BEE; border-radius: 50%; animation: spin 900ms linear infinite;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+    </style>
+  </head>
+
+  <body>
+    <div id="boot">
+      <div class="spinner" role="status" aria-label="Loading"></div>
+      <h1>Starting the dashboard…</h1>
+      <p>
+        Python is loading in your browser — no server involved. The first visit takes
+        about a minute; after that it is cached and opens straight away.
+      </p>
+    </div>
+
+    <div id="root"></div>
+
+    <script type="module">
+      import { mount } from "https://cdn.jsdelivr.net/npm/@stlite/browser@1.8.1/build/stlite.js";
+
+      mount(
+        {
+          entrypoint: "app.py",
+
+          // Packages Pyodide does not ship with. pandas and numpy come bundled
+          // with stlite; jinja2 is required by pandas' Styler in the data tab.
+          requirements: ["plotly==5.24.1", "openpyxl==3.1.5", "jinja2"],
+
+          // Left = path inside the virtual filesystem, right = where to fetch it
+          // from on the published site. Keep these in sync with the repository.
+          files: {
+            "app.py": { url: "./app.py" },
+            // No src/__init__.py here on purpose: an empty file is skipped by
+            // GitHub's web uploader, and Python treats src/ as a namespace
+            // package without it, so the import works either way.
+            "src/data_loader.py": { url: "./src/data_loader.py" },
+            "src/theme.py": { url: "./src/theme.py" },
+            "src/charts.py": { url: "./src/charts.py" },
+            // Binary file — fetched as bytes and written to the virtual disk.
+            "data/vista_financial_model.xlsx": {
+              url: "./data/vista_financial_model.xlsx",
+            },
+          },
+
+          // Same palette as .streamlit/config.toml, passed directly because the
+          // config file is not read in the browser runtime.
+          streamlitConfig: {
+            "theme.base": "dark",
+            "theme.primaryColor": "#A96BEE",
+            "theme.backgroundColor": "#150B26",
+            "theme.secondaryBackgroundColor": "#241440",
+            "theme.textColor": "#F3EEFA",
+            "client.toolbarMode": "viewer",
+          },
+        },
+        document.getElementById("root"),
+      );
+
+      // Hide the boot screen once Streamlit has painted its first frame.
+      const boot = document.getElementById("boot");
+      const observer = new MutationObserver(() => {
+        if (document.querySelector('#root [data-testid="stAppViewContainer"]')) {
+          boot.style.display = "none";
+          observer.disconnect();
+        }
+      });
+      observer.observe(document.getElementById("root"), { childList: true, subtree: true });
+    </script>
+  </body>
+</html>
