@@ -14,16 +14,19 @@ history (2022A–2025A), using operating drivers — Brent price, production gro
 expenditure — under three switchable scenarios. A set of KPIs evaluates growth, profitability, cash
 generation, solvency, returns on capital and valuation.
 
-An accompanying interactive web dashboard turns the model's KPIs into a visual summary that can be read in
-under four minutes (see below).
+Two interactive web dashboards sit on top of the model's outputs: one that presents the conclusions, and one
+that lets the reader test them.
 
-## Interactive Dashboard
+## Dashboards
 
-A single-page, interactive dashboard built on top of the model's Outputs sheet, designed for quick review by
-recruiters and analysts. It presents a headline read on the company, four key metrics, and five themed
-sections — each with an interactive chart and a short interpretive note.
+Both are published on GitHub Pages and readable without installing anything.
 
-▶ **View the dashboard** — open `index.html`, or enable GitHub Pages.
+### Summary dashboard
+
+A single-page visual read on the company, designed to be absorbed in under four minutes: a headline take,
+four key metrics, and five themed sections, each with a chart and a short interpretive note.
+
+▶ **[Open the summary dashboard](https://santucciandreas.github.io/Integrated-Financial-Model-VISTA-ENERGY-2026/)**
 
 | Section | Focus |
 |---|---|
@@ -35,6 +38,39 @@ sections — each with an interactive chart and a short interpretive note.
 
 A dashed gold line in every chart marks the boundary between actuals (2022–2025) and projections
 (2026E–2030E).
+
+### Interactive dashboard
+
+A full Streamlit application compiled to WebAssembly, so it runs entirely inside the browser with no server
+and no installation. Where the summary dashboard presents conclusions, this one lets the reader test them:
+the valuation section exposes the Brent × WACC sensitivity grid as live controls, so any combination of oil
+price and discount rate can be priced on the spot.
+
+▶ **[Open the interactive dashboard](https://santucciandreas.github.io/Integrated-Financial-Model-VISTA-ENERGY-2026/app.html)**
+— the first load takes about a minute while the Python runtime downloads; it is cached from then on.
+
+| Section | Focus |
+|---|---|
+| Overview | Headline card grid: production mix, margin, deleveraging, price target |
+| Production & growth | Daily output by product, and how volumes translate into revenue |
+| Margins & costs | Unit economics per barrel and the full margin ladder |
+| Cash & debt | The shift from investment phase to cash generation |
+| Valuation | DCF bridge, method comparison, and the live sensitivity grid |
+| Underlying data | Every parsed figure, filterable and downloadable as CSV |
+
+Solid bars are reported results; hatched bars on a shaded band are projections. The distinction is driven by
+the `A`/`E` suffix in the model's own year headers, so extending the forecast horizon extends the shading
+automatically.
+
+### Running the interactive dashboard locally
+
+```bash
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+The app opens at `http://localhost:8501`. After editing any Python source, regenerate the published page with
+`python build_standalone.py`.
 
 ## Project Structure
 
@@ -49,14 +85,22 @@ A dashed gold line in every chart marks the boundary between actuals (2022–202
 
 | File | Description |
 |---|---|
-| index.html | Interactive dashboard (open directly or host on GitHub Pages) |
-| generate_dashboard.py | Generator that turns the Outputs sheet into the dashboard |
+| `index.html` | Summary dashboard — open directly or host on GitHub Pages |
+| `generate_dashboard.py` | Generator that turns the Outputs sheet into the summary dashboard |
+| `app.html` | Interactive dashboard — self-contained Streamlit / WebAssembly build |
+| `app.py` | Streamlit application: layout and page structure |
+| `src/data_loader.py` | Parses the Outputs sheet into tidy pandas objects |
+| `src/theme.py` | Colour tokens, typography and the shared Plotly layout |
+| `src/charts.py` | One function per figure |
+| `build_standalone.py` | Rebuilds `app.html` after any change to the Python sources |
+| `requirements.txt` | Pinned dependencies for running the app locally |
 
 ## Tools Used
 
 - Microsoft Excel 365
 - Claude (Anthropic), running inside Excel, for model auditing and refactoring
-- Python (openpyxl) + Plotly for the interactive dashboard
+- Python (openpyxl) + Plotly for the interactive dashboards
+- Streamlit, compiled to WebAssembly with stlite, for the interactive build
 - Financial Modeling best-practice references (FMVA methodology)
 
 ## Key Assumptions
